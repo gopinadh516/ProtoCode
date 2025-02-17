@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Simple Codegen</title>
+  <script>
+    window.onmessage = (event) => {
+      const message = event.data.pluginMessage;
+      if (message.type === "code") {
+        document.getElementById("output").textContent = message.code;
+      }
+    };
+    function copyCode() {
+      navigator.clipboard.writeText(document.getElementById("output").textContent);
+    }
+  </script>
+</head>
+<body>
+  <h3>Generated Code:</h3>
+  <pre id="output"></pre>
+  <button onclick="copyCode()">Copy Code</button>
+</body>
+</html>
