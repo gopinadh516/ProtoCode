@@ -3,27 +3,27 @@
   "id": "1473223029025616825",
   "api": "1.0.0",
   "main": "code.js",
+  "ui": "ui.html",
   "capabilities": [
-    "codegen"
+    "codegen",
+    "inspect"
   ],
   "enableProposedApi": false,
   "documentAccess": "dynamic-page",
   "editorType": [
     "dev"
   ],
- "menu": [
-  {
-    "name": "Generate HTML",
-    "command": "generate-html"
-  }
-],
-
+  "menu": [
+    {
+      "name": "Generate HTML",
+      "command": "generate-html"
+    }
+  ],
   "networkAccess": {
     "allowedDomains": [
       "none"
     ]
   },
-   "capabilities": ["codegen"],
   "codegenLanguages": [
     {"label": "React", "value": "react"},
     {"label": "Typescript", "value": "typescript"}
@@ -38,20 +38,20 @@
     },
     {
       "itemType": "select",
-        "propertyName": "tabSize",
-        "label": "Tab Size",
-        "options": [
-          {"label": "2", "value": "2", "isDefault": true },
-          {"label": "4", "value": "4"},
-          {"label": "8", "value": "8"}
-        ],
-        "includedLanguages": ["typescript"]
+      "propertyName": "tabSize",
+      "label": "Tab Size",
+      "options": [
+        {"label": "2", "value": "2", "isDefault": true },
+        {"label": "4", "value": "4"},
+        {"label": "8", "value": "8"}
+      ],
+      "includedLanguages": ["typescript"]
     },
     {
-        "itemType": "action",
-        "propertyName": "showMore",
-        "label": "More settings...",
-        "includedLanguages": ["typescript"]
+      "itemType": "action",
+      "propertyName": "showMore",
+      "label": "More settings...",
+      "includedLanguages": ["typescript"]
     }
   ]
 }

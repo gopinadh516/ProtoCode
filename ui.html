@@ -1,22 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Simple Codegen</title>
-  <script>
-    window.onmessage = (event) => {
-      const message = event.data.pluginMessage;
-      if (message.type === "code") {
-        document.getElementById("output").textContent = message.code;
-      }
-    };
-    function copyCode() {
-      navigator.clipboard.writeText(document.getElementById("output").textContent);
+  <title>Image Preview</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
     }
-  </script>
+    #image-container {
+      margin-top: 10px;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
-  <h3>Generated Code:</h3>
-  <pre id="output"></pre>
-  <button onclick="copyCode()">Copy Code</button>
+  <h2>Figma Plugin UI</h2>
+  <div id="content">
+    <div id="status"></div>
+    <div id="image-container">
+      <img id="preview-image" alt="Preview" style="display: none;" />
+    </div>
+  </div>
+  <script>
+    // Notify the plugin that the UI is ready
+    parent.postMessage({ pluginMessage: { type: 'ready' } }, '*');
+
+    // Listen for messages from the plugin
+    window.onmessage = (event) => {
+      const message = event.data.pluginMessage;
+      if (message.type === 'image-bytes') {
+        const bytes = new Uint8Array(message.bytes);
+        const blob = new Blob([bytes], { type: 'image/png' });
+        const url = URL.createObjectURL(blob);
+        const img = document.getElementById('preview-image');
+        img.src = url;
+        img.style.display = 'block';
+      }
+    };
+  </script>
 </body>
 </html>

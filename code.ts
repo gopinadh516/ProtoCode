@@ -1,45 +1,50 @@
-figma.codegen.on("generate", async (event) => {
-  return [event.node].map((node: SceneNode) => {
-    // Add basic node properties
-    const nodeProps = `
-      Node Type: ${node.type}
-      Name: ${node.name}
-      ID: ${node.id}
-      Width: ${node.width}px
-      Height: ${node.height}px
-      X Position: ${node.x}
-      Y Position: ${node.y}
-    `;
+figma.showUI(__html__, { 
+  width: 400, 
+  height: 500,
+  themeColors: true 
+});
 
-    if (node.type === "RECTANGLE") {
-      const fills = node.fills as SolidPaint[];
-      if (fills.length > 0 && fills[0].type === "SOLID") {
-        const color = fills[0].color;
-        const rgbColor = `rgb(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)})`;
-        return {
-          title: "Rectangle Element Properties",
-          language: "HTML",
-          code: `
-<!-- Node Properties -->
-<!--
-${nodeProps}
-Color: ${rgbColor}
--->
+figma.ui.onmessage = async (msg) => {
+  if (msg.type === 'ready') {
+    if (figma.editorType === "dev") {
+      const numChildren = figma.currentPage.children.length;
+      figma.notify(`Dev Mode: Current page has ${numChildren} children`);
+    } else {
+      const node = figma.createRectangle();
+      node.name = "Generated Rectangle";
+      node.resize(100, 100);
+      node.fills = [{
+        type: 'SOLID',
+        color: { r: 1, g: 0, b: 0 }
+      }];
 
-<div style="width:${node.width}px; height:${node.height}px; background-color:${rgbColor};"></div>`
-        };
-      }
+      const bytes = await node.exportAsync({
+        format: 'PNG',
+        constraint: { type: 'SCALE', value: 2 }
+      });
+
+      figma.ui.postMessage({
+        type: 'image-bytes',
+        bytes: bytes
+      });
     }
-    return {
-      title: "Node Properties",
-      language: "HTML",
-      code: `
-<!-- Node Properties -->
-<!--
-${nodeProps}
--->
+  }
+};
 
-<!-- Unsupported node type: ${node.type} -->`
-    };
-  });
+figma.on("selectionchange", () => {
+  const selection = figma.currentPage.selection;
+  if (selection.length > 0) {
+    const node = selection[0];
+    if (node.type === "RECTANGLE") {
+      node.exportAsync({
+        format: 'PNG',
+        constraint: { type: 'SCALE', value: 2 }
+      }).then(bytes => {
+        figma.ui.postMessage({
+          type: 'image-bytes',
+          bytes: bytes
+        });
+      });
+    }
+  }
 });
