@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Export Node</title>
+  <style>
+    #imageContainer {
+      display: flex; /* Use flexbox for image layout */
+      flex-wrap: wrap; /* Allow images to wrap */
+      gap: 10px;      /* Spacing between images */
+       max-width: 200px; /* Adjust as needed */
+      max-height: 200px; 
+    }
+    #imageContainer img {
+      max-width: 200px; /* Adjust as needed */
+      max-height: 200px; /* Adjust as needed */
+    }
+  </style>
+</head>
+<body>
+  <div id="imageContainer">
+    <h1>Image Node here</h1>
+  </div>
+
+  <script>
+    
+    parent.postMessage({ pluginMessage: { type: 'ready' } }, '*');
+
+    onmessage = event => {
+      if (event.data.pluginMessage) {
+        const msg = event.data.pluginMessage;
+
+        const container = document.getElementById('imageContainer');
+
+        if (msg.type === 'image-bytes') {
+          container.innerHTML = ''; // Clear previous images
+          msg.images.forEach(imageBytes => {
+            const blob = new Blob([imageBytes], { type: 'image/png' });
+            const url = URL.createObjectURL(blob);
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.maxWidth = '100%'; // Or a specific size
+            img.style.maxHeight = '100%'; // Or a specific size
+            container.appendChild(img);
+          });
+        } else if (msg.type === 'no-selection') {
+          container.innerHTML = '<p>No nodes selected.</p>';
+        } else if (msg.type === 'export-error') {
+          console.error("Export error received in UI:", msg.error);
+          container.innerHTML = `<p style="color:red">Error exporting: ${msg.error}. Check console</p>`;
+        }
+      }
+    };
+  </script>
+</body>
+</html>

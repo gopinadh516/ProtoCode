@@ -4,38 +4,12 @@
   <title>Export Node</title>
 </head>
 <body>
-  <div id="imageContainer"></div>
+  <h1>This is static HTML from ui.html</h1>  </body>
+  <p>Some more static coasntent.</p>
+
+  <div id="react-root"></div>
+  <script src="ui/react-ui/dist/bundle.js"></script>
   <script>
-    parent.postMessage({ pluginMessage: { type: 'ready' } }, '*');
-
-    onmessage = event => {
-      if (event.data.pluginMessage) {
-        const msg = event.data.pluginMessage;
-
-        if (msg.type === 'image-bytes') {
-          const container = document.getElementById('imageContainer');
-          container.innerHTML = ''; // Clear previous images
-
-          msg.images.forEach(imageBytes => {
-            const blob = new Blob([imageBytes], { type: 'image/png' });
-            const url = URL.createObjectURL(blob);
-            const img = document.createElement('img');
-            img.src = url;
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '100%';
-            container.appendChild(img);
-          });
-        } else if (msg.type === 'no-selection') {
-          const container = document.getElementById('imageContainer');
-          container.innerHTML = '<p>No nodes selected.</p>'; // Display message
-        }
-        else if (msg.type === 'export-error') {
-          console.error("Export error received in UI:", msg.error);
-           const container = document.getElementById('imageContainer');
-          container.innerHTML = `<p style="color:red">Error exporting: ${msg.error}. Check console</p>`; // Display error
-        }
-      }
-    };
-  </script>
-</body>
+    console.log("ui.html loaded");
+</script> </body>
 </html>
