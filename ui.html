@@ -1,45 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <title>Image Preview</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    #image-container {
-      margin-top: 10px;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-  </style>
+  <title>Export Node</title>
 </head>
 <body>
-  <h2>Figma Plugin UI</h2>
-  <div id="content">
-    <div id="status"></div>
-    <div id="image-container">
-      <img id="preview-image" alt="Preview" style="display: none;" />
-    </div>
-  </div>
+  <div id="imageContainer"></div>
   <script>
-    // Notify the plugin that the UI is ready
     parent.postMessage({ pluginMessage: { type: 'ready' } }, '*');
 
-    // Listen for messages from the plugin
-    window.onmessage = (event) => {
-      const message = event.data.pluginMessage;
-      if (message.type === 'image-bytes') {
-        const bytes = new Uint8Array(message.bytes);
-        const blob = new Blob([bytes], { type: 'image/png' });
-        const url = URL.createObjectURL(blob);
-        const img = document.getElementById('preview-image');
-        img.src = url;
-        img.style.display = 'block';
+    onmessage = event => {
+      if (event.data.pluginMessage) {
+        const msg = event.data.pluginMessage;
+
+        if (msg.type === 'image-bytes') {
+          const container = document.getElementById('imageContainer');
+          container.innerHTML = ''; // Clear previous images
+
+          msg.images.forEach(imageBytes => {
+            const blob = new Blob([imageBytes], { type: 'image/png' });
+            const url = URL.createObjectURL(blob);
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+            container.appendChild(img);
+          });
+        } else if (msg.type === 'no-selection') {
+          const container = document.getElementById('imageContainer');
+          container.innerHTML = '<p>No nodes selected.</p>'; // Display message
+        }
+        else if (msg.type === 'export-error') {
+          console.error("Export error received in UI:", msg.error);
+           const container = document.getElementById('imageContainer');
+          container.innerHTML = `<p style="color:red">Error exporting: ${msg.error}. Check console</p>`; // Display error
+        }
       }
     };
   </script>

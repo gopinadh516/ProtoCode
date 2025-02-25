@@ -15,8 +15,9 @@
   ],
   "menu": [
     {
-      "name": "Generate HTML",
-      "command": "generate-html"
+      "name": "Run the plugin",
+      "command": "run-plugin"
+    
     }
   ],
   "networkAccess": {

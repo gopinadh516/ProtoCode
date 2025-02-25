@@ -1,63 +1,60 @@
-// Handle both the command and selection changes
-figma.on("run", (event) => {
-  if (event.command === "generate-html") {
-    showUI();
-  }
-});
+figma.showUI(__html__, { width: 400, height: 500, themeColors: true });
 
-figma.on("selectionchange", () => {
-  showUI();
-});
-
-// Extract the common UI showing logic
-function showUI() {
-  figma.showUI(__html__, { 
-    width: 400, 
-    height: 500,
-    themeColors: true 
-  });
-
-  const selection = figma.currentPage.selection;
-  if (selection.length > 0) {
-    const node = selection[0];
-    if (node.type === "RECTANGLE") {
-      node.exportAsync({
-        format: 'PNG',
-        constraint: { type: 'SCALE', value: 2 }
-      }).then(bytes => {
-        figma.ui.postMessage({
-          type: 'image-bytes',
-          bytes: bytes
-        });
-      });
-    }
-  }
-}
-
-// Keep the existing message handler
 figma.ui.onmessage = async (msg) => {
   if (msg.type === 'ready') {
-    if (figma.editorType === "dev") {
-      const numChildren = figma.currentPage.children.length;
-      figma.notify(`Dev Mode: Current page has ${numChildren} children`);
-    } else {
-      const node = figma.createRectangle();
-      node.name = "Generated Rectangle";
-      node.resize(100, 100);
-      node.fills = [{
-        type: 'SOLID',
-        color: { r: 1, g: 0, b: 0 }
-      }];
+    const selection = figma.currentPage.selection;
 
-      const bytes = await node.exportAsync({
+    if (selection.length > 0) {
+      const nodes = selection;
+      const exportPromises = nodes.map(node => node.exportAsync({
         format: 'PNG',
         constraint: { type: 'SCALE', value: 2 }
-      });
+      }));
 
-      figma.ui.postMessage({
-        type: 'image-bytes',
-        bytes: bytes
+      Promise.all(exportPromises).then(images => {
+        figma.ui.postMessage({
+          type: 'image-bytes',
+          images: images
+        });
+      }).catch(error => {
+        console.error("Error exporting nodes:", error);
+        figma.notify("Error exporting selected nodes. Check the console for details.");
+        figma.ui.postMessage({ type: 'export-error', error: error.message }); // Send error to UI
       });
+    } else {
+      figma.notify("No nodes selected. Please select nodes to export.");
+      figma.ui.postMessage({ type: 'no-selection' }); // Notify UI about no selection
     }
   }
 };
+
+figma.on("selectionchange", () => {
+  const selection = figma.currentPage.selection;
+  if (selection.length > 0) {
+    const nodes = selection;
+    const exportPromises = nodes.map(node => node.exportAsync({
+      format: 'PNG',
+      constraint: { type: 'SCALE', value: 2 }
+    }));
+
+    Promise.all(exportPromises).then(images => {
+      figma.ui.postMessage({
+        type: 'image-bytes',
+        images: images
+      });
+    }).catch(error => {
+      console.error("Error exporting nodes:", error);
+      figma.notify("Error exporting selected nodes. Check the console for details.");
+      figma.ui.postMessage({ type: 'export-error', error: error.message }); // Send error to UI
+
+    });
+  } else {
+    figma.ui.postMessage({ type: 'no-selection' }); // Notify UI about no selection
+  }
+});
+
+figma.on("run", (event) => {
+  if (event.command === "run-plugin") {
+    // No need to call showUI here, it's already called at the start
+  }
+});
