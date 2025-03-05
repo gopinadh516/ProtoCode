@@ -1,15 +1,77 @@
-<!DOCTYPE html>
 <html>
 <head>
-  <title>Export Node</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .image-container, .json-container {
+            flex: 1;
+        }
+        .json-viewer {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-  <h1>This is static HTML from ui.html</h1>  </body>
-  <p>Some more static coasntent.</p>
+    <div class="container">
+        <div class="image-container">
+            <h3>Exported Images</h3>
+            <div id="images"></div>
+        </div>
+        <div class="json-container">
+            <h3>Node Data</h3>
+            <div id="json" class="json-viewer"></div>
+        </div>
+    </div>
 
-  <div id="react-root"></div>
-  <script src="ui/react-ui/dist/bundle.js"></script>
-  <script>
-    console.log("ui.html loaded");
-</script> </body>
+    <script>
+        window.onload = () => {
+            parent.postMessage({ pluginMessage: { type: 'ready' } }, '*');
+        };
+
+        window.onmessage = (event) => {
+            const msg = event.data.pluginMessage;
+
+            if (msg.type === 'export-data') {
+                const imagesContainer = document.getElementById('images');
+                const jsonContainer = document.getElementById('json');
+                
+                // Clear previous content
+                imagesContainer.innerHTML = '';
+                jsonContainer.innerHTML = '';
+
+                msg.data.forEach((item, index) => {
+                    // Display image
+                    const img = document.createElement('img');
+                    const arrayBuffer = item.image;
+                    const blob = new Blob([arrayBuffer]);
+                    img.src = URL.createObjectURL(blob);
+                    imagesContainer.appendChild(img);
+
+                    // Display JSON
+                    const jsonText = document.createElement('pre');
+                    jsonText.textContent = JSON.stringify(item.json, null, 2);
+                    jsonContainer.appendChild(jsonText);
+                });
+            } else if (msg.type === 'no-selection') {
+                document.getElementById('images').innerHTML = '<p>No selection</p>';
+                document.getElementById('json').innerHTML = '<p>No selection</p>';
+            }
+        };
+    </script>
+</body>
 </html>
